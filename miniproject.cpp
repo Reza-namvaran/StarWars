@@ -6,9 +6,9 @@ void runGame();
 void receiveInput();
 bool validateInput(char, string);
 void createGame();
-void updateGame();
+void updateGame(bool *, string *);
 void showGame();
-void gameOver();
+void gameOver(string);
 void move(char);
 void shot(char);
 void throwError(string);
@@ -22,43 +22,43 @@ int main()
 void runGame()
 {
     createGame();
+    string winner;
     bool isGameRunning = true;
     while (isGameRunning)
     {
         receiveInput();
-        updateGame();
+        updateGame(&isGameRunning, &winner);
     }
-    gameOver();
+    gameOver(winner);
 }
 
 void receiveInput()
 {
     char userInput;
-    cout << "What would you like to do? ( m => move, s => shot) : ";
-    cin >> userInput;
-    userInput = tolower(userInput);
-    if (!validateInput(userInput))
+
+    cout << "What would you like to do? ( m => move, s => shot ) : ";
+    do
     {
-        return;
-    }
-    else if (userInput == 'm')
-    {
-        cout << "Choose your move ( w => Go up, s => Go down , a => Go left , d => Go right) : ";
         cin >> userInput;
-        if (!validateInput(userInput, "move"))
+    } while (!validateInput(userInput));
+    userInput = tolower(userInput);
+
+    if (userInput == 'm')
+    {
+        cout << "Choose your move ( w => Go up, s => Go down , a => Go left , d => Go right ) : ";
+        do
         {
-            return;
-        }
+            cin >> userInput;
+        } while (!validateInput(userInput, "move"));
         move(userInput);
     }
-    else if (userInput == 's')
+    else
     {
-        cout << "Choose your move ( a => Go left , d => Go right) : ";
-        cin >> userInput;
-        if (!validateInput(userInput, "shot"))
+        cout << "Choose your move ( a => Go left , d => Go right ) : ";
+        do
         {
-            return;
-        }
+            cin >> userInput;
+        } while (!validateInput(userInput, "shot"));
         shot(userInput);
     }
 }
@@ -66,6 +66,7 @@ void receiveInput()
 bool validateInput(char userInput, string status = "firstChoice")
 {
     //  status value can be : "firstChoice" or "move" or "shot"
+    userInput = tolower(userInput);
     if (status == "firstChoice")
     {
         if (userInput == 'm' || userInput == 's')
@@ -74,7 +75,7 @@ bool validateInput(char userInput, string status = "firstChoice")
         }
         else
         {
-            throwError("Your choice is invalid. You have to choose between `m` or `s`");
+            throwError("Your choice is invalid. You have to choose between `m` or `s` : ");
             return false;
         }
     }
@@ -86,7 +87,7 @@ bool validateInput(char userInput, string status = "firstChoice")
         }
         else
         {
-            throwError("Your choice is invalid. You have to choose between `w` or `s` or `a` or `d`");
+            throwError("Your choice is invalid. You have to choose between `w` or `s` or `a` or `d` : ");
             return false;
         }
     }
@@ -98,7 +99,7 @@ bool validateInput(char userInput, string status = "firstChoice")
         }
         else
         {
-            throwError("Your choice is invalid. You have to choose between `a` or `d`");
+            throwError("Your choice is invalid. You have to choose between `a` or `d` : ");
             return false;
         }
     }
@@ -106,11 +107,14 @@ bool validateInput(char userInput, string status = "firstChoice")
 
 void createGame() {}
 
-void updateGame() {}
+void updateGame(bool *isGameRunningPtr, string *winnerPtr)
+{
+    system("cls");
+}
 
 void showGame() {}
 
-void gameOver() {}
+void gameOver(string winner) {}
 
 void move(char direction) {}
 
@@ -118,5 +122,5 @@ void shot(char direction) {}
 
 void throwError(string errorMessage)
 {
-    cout << "!!! " << errorMessage << " !!!" << endl;
+    cout << errorMessage << endl;
 }

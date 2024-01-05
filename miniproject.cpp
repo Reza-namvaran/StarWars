@@ -4,15 +4,14 @@
 using namespace std;
 
 void runGame();
-void receiveInput();
+void generateMap(string (&)[10][10], int (&)[2], bool &, int, int);
+void receiveInput(string (&)[10][10], int[], int &, int &);
 bool validateInput(char, string);
-void createGame();
-void updateGame(bool *, string *);
-void showGame();
-void gameOver(string);
-void move(char);
-void shot(char);
-void throwError(string);
+void gameOver(int, int);
+void move(char, string (&)[10][10], int[], int &);
+void shot(char, string (&)[10][10], int &);
+void damage(int &);
+string throwError(string);
 
 int main()
 {
@@ -22,18 +21,85 @@ int main()
 
 void runGame()
 {
-    createGame();
-    string winner;
+    string map[10][10];
+    int spaceshipPosition[2] = {-1, -1}, winnerStatus = 10, healthStatus = 3;
     bool isGameRunning = true;
     while (isGameRunning)
     {
-        receiveInput();
-        updateGame(&isGameRunning, &winner);
+        generateMap(map, spaceshipPosition, isGameRunning, winnerStatus, healthStatus);
+        receiveInput(map, spaceshipPosition, healthStatus, winnerStatus);
     }
-    gameOver(winner);
+    gameOver(winnerStatus, healthStatus);
 }
 
-void receiveInput()
+void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], bool &isGameRunning, int winnerStatus, int healthStatus)
+{
+    string enemy = "*", spaceship = "^";
+    if (spaceshipPosition[0] == -1)
+    {
+        srand(time(NULL));
+        int random_x_position;
+        int random_y_position;
+        for (int i = 0; i < 10; i++)
+        {
+            do
+            {
+                random_x_position = rand() % 10;
+                random_y_position = rand() % 10;
+            } while (map[random_x_position][random_y_position] == enemy);
+            map[random_x_position][random_y_position] = enemy;
+        }
+
+        do
+        {
+            random_x_position = rand() % 10;
+            random_y_position = rand() % 10;
+            map[random_x_position][random_y_position] = spaceship;
+            spaceshipPosition[0] = random_x_position;
+            spaceshipPosition[1] = random_y_position;
+        } while (map[random_x_position][random_y_position] == enemy);
+    }
+    else
+    {
+        system("cls");
+        if (winnerStatus == 0 || healthStatus == 0)
+        {
+            isGameRunning = false;
+            return;
+        }
+    }
+    for (int i = 0; i < 11; i++)
+    {
+        for (int j = 0; j < 10; j++)
+        {
+            cout << " ---";
+        }
+
+        cout << endl;
+
+        if (i == 10)
+            continue;
+
+        for (int k = 0; k < 10; k++)
+        {
+            if (map[i][k] == enemy || map[i][k] == spaceship)
+            {
+                cout << "| " << map[i][k] << " ";
+            }
+            else
+            {
+                cout << "|   ";
+            }
+            if (k == 9)
+            {
+                cout << "|";
+            }
+        }
+        cout << endl;
+    }
+}
+
+void receiveInput(string (&map)[10][10], int spaceshipPosition[], int &healthStatus, int &winnerStatus)
 {
     char userInput;
 
@@ -51,7 +117,7 @@ void receiveInput()
         {
             cin >> userInput;
         } while (!validateInput(userInput, "move"));
-        move(userInput);
+        move(userInput, map, spaceshipPosition, healthStatus);
     }
     else
     {
@@ -60,7 +126,7 @@ void receiveInput()
         {
             cin >> userInput;
         } while (!validateInput(userInput, "shot"));
-        shot(userInput);
+        shot(userInput, map, winnerStatus);
     }
 }
 
@@ -76,7 +142,7 @@ bool validateInput(char userInput, string status)
         }
         else
         {
-            throwError("Your choice is invalid. You have to choose between `m` or `s` : ");
+            cout << throwError("Your choice is invalid. You have to choose between `m` or `s` : ");
             return false;
         }
     }
@@ -88,7 +154,7 @@ bool validateInput(char userInput, string status)
         }
         else
         {
-            throwError("Your choice is invalid. You have to choose between `w` or `s` or `a` or `d` : ");
+            cout << throwError("Your choice is invalid. You have to choose between `w` or `s` or `a` or `d` : ");
             return false;
         }
     }
@@ -100,74 +166,117 @@ bool validateInput(char userInput, string status)
         }
         else
         {
-            throwError("Your choice is invalid. You have to choose between `a` or `d` : ");
+            cout << throwError("Your choice is invalid. You have to choose between `a` or `d` : ");
             return false;
         }
     }
 }
 
-void createGame() {
-    string map[10][10], enemy = "*", spaceship = "^";
-    
-    srand(time(NULL));
-    int random_x_position;
-    int random_y_position;
-    for (int i = 0; i < 10; i++){
-        random_x_position = rand() % 10;
-        random_y_position = rand() % 10;
-        map[random_x_position][random_y_position] = enemy;
-    }
-
-    random_x_position = rand() % 10;
-    random_y_position = rand() % 10;
-
-    if (map[random_x_position][random_y_position] != enemy)
+void gameOver(int winnerStatus, int healthStatus)
+{
+    if (winnerStatus == 0)
     {
-        map[random_x_position][random_y_position] = spaceship;
+        cout << "\n   \\\\      //\\\\      //  ||     //\\\\      // \n";
+        cout << "    \\\\    //  \\\\    //   ||    //  \\\\    // \n";
+        cout << "     \\\\  //    \\\\  //    ||   //    \\\\  // \n";
+        cout << "      \\\\//      \\\\//     ||  //      \\\\// \n\n";
     }
-
-    for (int i = 0; i < 11; i++) {
-        for ( int j = 0; j < 10; j++) {
-            cout << " ---";
-        }
-        
-        cout << endl;
-
-        if (i == 10) continue;
-
-        for (int k = 0; k < 10; k++) {
-            if (map[i][k] == enemy || map[i][k] == spaceship) {
-                cout << "| " << map[i][k] << " ";
-            
-            }
-            else {
-                cout << "|   ";
-            }
-            if (k == 9) {
-                cout << "|";
-            }
-
-        }
-
-        cout << endl;
+    else if (healthStatus == 0)
+    {
+        cout << "\n   ||             //||||||\\\\       ///|||||\\\\\\    ||\\\\\\\\\\\\\\\\\\\\\n";
+        cout << "   ||            ||        ||      \\\\       //    ||\n";
+        cout << "   ||            ||        ||         \\\\          ||\\\\\\\\\\\\\\\\\\\\\n";
+        cout << "   ||            ||        ||    //       \\\\      ||\n";
+        cout << "   ||\\\\\\\\\\\\\\\\\\    \\\\||||||//     \\\\\\|||||///      ||\\\\\\\\\\\\\\\\\\\\\n\n";
     }
-
 }
 
-void updateGame(bool *isGameRunningPtr, string *winnerPtr)
+void move(char direction, string (&map)[10][10], int spaceshipPosition[], int &healthStatus)
 {
-    system("cls");
+    for (int i = 0; i < 10; i++)
+    {
+        for (int j = 0; j < 10; j++)
+        {
+            if (map[i][j] == "^")
+            {
+                if (direction == 'w')
+                {
+                    if (i == 0)
+                    {
+                        return;
+                    }
+                    else if (map[i - 1][j] == "*")
+                    {
+                        map[i][j] = "";
+                        map[spaceshipPosition[0]][spaceshipPosition[1]] = "^";
+                        damage(healthStatus);
+                        return;
+                    }
+                    map[i][j] = "";
+                    map[i - 1][j] = "^";
+                    return;
+                }
+                else if (direction == 's')
+                {
+                    if (i == 9)
+                    {
+                        return;
+                    }
+                    else if (map[i + 1][j] == "*")
+                    {
+                        map[i][j] = "";
+                        map[spaceshipPosition[0]][spaceshipPosition[1]] = "^";
+                        damage(healthStatus);
+                        return;
+                    }
+                    map[i][j] = "";
+                    map[i + 1][j] = "^";
+                    return;
+                }
+                else if (direction == 'a')
+                {
+                    if (j == 0)
+                    {
+                        return;
+                    }
+                    else if (map[i][j - 1] == "*")
+                    {
+                        map[i][j] = "";
+                        map[spaceshipPosition[0]][spaceshipPosition[1]] = "^";
+                        damage(healthStatus);
+                        return;
+                    }
+                    map[i][j] = "";
+                    map[i][j - 1] = "^";
+                    return;
+                }
+                else
+                {
+                    if (j == 9)
+                    {
+                        return;
+                    }
+                    else if (map[i][j + 1] == "*")
+                    {
+                        map[i][j] = "";
+                        map[spaceshipPosition[0]][spaceshipPosition[1]] = "^";
+                        damage(healthStatus);
+                        return;
+                    }
+                    map[i][j] = "";
+                    map[i][j + 1] = "^";
+                    return;
+                }
+            }
+        }
+    }
 }
 
-void showGame() {}
+void shot(char direction, string (&map)[10][10], int &winnerStatus) {}
 
-void gameOver(string winner) {}
+void damage(int &healthStatus) {}
 
-void move(char direction) {}
-
-void shot(char direction) {}
-
-void throwError(string errorMessage)
+string throwError(string errorMessage)
 {
-    cout << errorMessage << endl;
+    return errorMessage;
 }

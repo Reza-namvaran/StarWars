@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 
 using namespace std;
 
@@ -40,7 +41,7 @@ void receiveInput()
     do
     {
         cin >> userInput;
-    } while (!validateInput(userInput));
+    } while (!validateInput(userInput, "firstChoice"));
     userInput = tolower(userInput);
 
     if (userInput == 'm')
@@ -63,7 +64,7 @@ void receiveInput()
     }
 }
 
-bool validateInput(char userInput, string status = "firstChoice")
+bool validateInput(char userInput, string status)
 {
     //  status value can be : "firstChoice" or "move" or "shot"
     userInput = tolower(userInput);
@@ -105,7 +106,53 @@ bool validateInput(char userInput, string status = "firstChoice")
     }
 }
 
-void createGame() {}
+void createGame() {
+    string map[10][10], enemy = "*", spaceship = "^";
+    
+    srand(time(NULL));
+    int random_x_position;
+    int random_y_position;
+    for (int i = 0; i < 10; i++){
+        random_x_position = rand() % 10;
+        random_y_position = rand() % 10;
+        map[random_x_position][random_y_position] = enemy;
+    }
+
+    random_x_position = rand() % 10;
+    random_y_position = rand() % 10;
+
+    if (map[random_x_position][random_y_position] != enemy)
+    {
+        map[random_x_position][random_y_position] = spaceship;
+    }
+
+    for (int i = 0; i < 11; i++) {
+        for ( int j = 0; j < 10; j++) {
+            cout << " ---";
+        }
+        
+        cout << endl;
+
+        if (i == 10) continue;
+
+        for (int k = 0; k < 10; k++) {
+            if (map[i][k] == enemy || map[i][k] == spaceship) {
+                cout << "| " << map[i][k] << " ";
+            
+            }
+            else {
+                cout << "|   ";
+            }
+            if (k == 9) {
+                cout << "|";
+            }
+
+        }
+
+        cout << endl;
+    }
+
+}
 
 void updateGame(bool *isGameRunningPtr, string *winnerPtr)
 {

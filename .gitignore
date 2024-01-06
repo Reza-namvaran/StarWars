@@ -1,2 +1,5 @@
 .vscode/
-miniproject.exe
+
+*.exe
+
+.gitignore

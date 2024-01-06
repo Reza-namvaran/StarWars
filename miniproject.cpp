@@ -4,12 +4,12 @@
 using namespace std;
 
 void runGame();
-void generateMap(string (&)[10][10], int (&)[2], bool &, int, int);
-void receiveInput(string (&)[10][10], int[], int &, int &);
+void generateMap(string (&)[10][10], int (&)[2], int (&)[2], bool &, int, int);
+void receiveInput(string (&)[10][10], int[], int (&)[2], int &, int &);
 bool validateInput(char, string);
 void gameOver(int, int);
-void move(char, string (&)[10][10], int[], int &);
-void shot(char, string (&)[10][10], int &);
+void move(char, string (&)[10][10], int[], int (&)[2], int &);
+void shot(char, string (&)[10][10], int (&)[2],int &);
 void damage(int &);
 string throwError(string);
 
@@ -22,17 +22,17 @@ int main()
 void runGame()
 {
     string map[10][10];
-    int spaceshipPosition[2] = {-1, -1}, winnerStatus = 10, healthStatus = 3;
+    int spaceshipPosition[2] = {-1, -1}, currentPosiotion[2] = {-1, 1} ,winnerStatus = 10, healthStatus = 3;
     bool isGameRunning = true;
     while (isGameRunning)
     {
-        generateMap(map, spaceshipPosition, isGameRunning, winnerStatus, healthStatus);
-        receiveInput(map, spaceshipPosition, healthStatus, winnerStatus);
+        generateMap(map, spaceshipPosition, currentPosiotion, isGameRunning, winnerStatus, healthStatus);
+        receiveInput(map, spaceshipPosition, currentPosiotion, healthStatus, winnerStatus);
     }
     gameOver(winnerStatus, healthStatus);
 }
 
-void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], bool &isGameRunning, int winnerStatus, int healthStatus)
+void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&currenntPosiotion)[2],bool &isGameRunning, int winnerStatus, int healthStatus)
 {
     string enemy = "*", spaceship = "^";
     if (spaceshipPosition[0] == -1)
@@ -57,6 +57,8 @@ void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], bool &isGam
             map[random_x_position][random_y_position] = spaceship;
             spaceshipPosition[0] = random_x_position;
             spaceshipPosition[1] = random_y_position;
+            currenntPosiotion[0] = spaceshipPosition[0];
+            currenntPosiotion[1] = spaceshipPosition[1];
         } while (map[random_x_position][random_y_position] == enemy);
     }
     else
@@ -99,7 +101,7 @@ void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], bool &isGam
     }
 }
 
-void receiveInput(string (&map)[10][10], int spaceshipPosition[], int &healthStatus, int &winnerStatus)
+void receiveInput(string (&map)[10][10], int spaceshipPosition[], int (&currentPosition)[2],int &healthStatus, int &winnerStatus)
 {
     char userInput;
 
@@ -117,16 +119,16 @@ void receiveInput(string (&map)[10][10], int spaceshipPosition[], int &healthSta
         {
             cin >> userInput;
         } while (!validateInput(userInput, "move"));
-        move(userInput, map, spaceshipPosition, healthStatus);
+        move(userInput, map, spaceshipPosition, currentPosition, healthStatus);
     }
     else
     {
-        cout << "Choose your move ( a => Go left , d => Go right ) : ";
+        cout << "Choose your move ( a => Shot left , d => Shot right ) : ";
         do
         {
             cin >> userInput;
         } while (!validateInput(userInput, "shot"));
-        shot(userInput, map, winnerStatus);
+        shot(userInput, map, currentPosition, winnerStatus);
     }
 }
 
@@ -191,7 +193,7 @@ void gameOver(int winnerStatus, int healthStatus)
     }
 }
 
-void move(char direction, string (&map)[10][10], int spaceshipPosition[], int &healthStatus)
+void move(char direction, string (&map)[10][10], int spaceshipPosition[],  int (&currentPosition)[2], int &healthStatus)
 {
     for (int i = 0; i < 10; i++)
     {
@@ -214,6 +216,8 @@ void move(char direction, string (&map)[10][10], int spaceshipPosition[], int &h
                     }
                     map[i][j] = "";
                     map[i - 1][j] = "^";
+                    currentPosition[0] = i - 1;
+                    currentPosition[1] = j;
                     return;
                 }
                 else if (direction == 's')
@@ -231,6 +235,8 @@ void move(char direction, string (&map)[10][10], int spaceshipPosition[], int &h
                     }
                     map[i][j] = "";
                     map[i + 1][j] = "^";
+                    currentPosition[0] = i + 1;
+                    currentPosition[1] = j;
                     return;
                 }
                 else if (direction == 'a')
@@ -248,6 +254,8 @@ void move(char direction, string (&map)[10][10], int spaceshipPosition[], int &h
                     }
                     map[i][j] = "";
                     map[i][j - 1] = "^";
+                    currentPosition[0] = i;
+                    currentPosition[1] = j - 1;
                     return;
                 }
                 else
@@ -265,6 +273,8 @@ void move(char direction, string (&map)[10][10], int spaceshipPosition[], int &h
                     }
                     map[i][j] = "";
                     map[i][j + 1] = "^";
+                    currentPosition[0] = i;
+                    currentPosition[1] = j + 1;
                     return;
                 }
             }
@@ -272,7 +282,29 @@ void move(char direction, string (&map)[10][10], int spaceshipPosition[], int &h
     }
 }
 
-void shot(char direction, string (&map)[10][10], int &winnerStatus) {}
+void shot(char direction, string (&map)[10][10], int (&currentPosition)[2], int &winnerStatus) {
+    switch(direction)
+    {
+        case 'a':
+                for (int j = currentPosition[1]; j >= 0; j--){
+                    if (map[currentPosition[0]][j] == "*")
+                    {
+                        map[currentPosition[0]][j] = " ";
+                        return;
+                    }
+                }
+            break;
+        case 'd':
+                for (int j = currentPosition[1]; j <= 9; j ++){
+                    if (map[currentPosition[0]][j] == "*")
+                    {
+                        map[currentPosition[0]][j] = " ";
+                        return;
+                    }
+                }
+            break;
+    }
+}
 
 void damage(int &healthStatus) {}
 

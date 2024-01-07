@@ -358,6 +358,7 @@ bool isFilled(string map[][10], int row)
 
 int generateCountOfEnemy()
 {
+    srand(time(NULL));
     int count = (rand() % 81) + 10;
     return count;
 }

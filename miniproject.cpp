@@ -5,15 +5,17 @@
 using namespace std;
 
 void runGame();
-void generateMap(string (&)[10][10], int (&)[2], int (&)[2], bool &, int, int);
+void generateMap(string (&)[10][10], int (&)[2], int (&)[2], int, int, int);
 void receiveInput(string (&)[10][10], int[], int (&)[2], int &, int &);
 bool validateInput(char, string);
-void gameOver(int, int);
+void gameOver(int, int, int);
 void move(char, string (&)[10][10], int[], int (&)[2], int &);
-void shot(char, string (&)[10][10], int (&)[2],int &);
+void shot(char, string (&)[10][10], int (&)[2], int &);
 void damage(int &);
 string HealthBar(int &healthStatus);
 string throwError(string);
+bool isFilled(string[][10], int);
+int generateCountOfEnemy();
 
 int main()
 {
@@ -24,20 +26,20 @@ int main()
 void runGame()
 {
     string map[10][10];
-    int spaceshipPosition[2] = {-1, -1}, currentPosiotion[2] = {-1, 1} ,score = 0, healthStatus = 3;
-    bool isGameRunning = true;
-    while (isGameRunning)
+    int spaceshipPosition[2] = {-1, -1}, currentPosition[2] = {-1, 1}, enemyCounter = generateCountOfEnemy(), score = 0, healthStatus = 3;
+    while (true)
     {
-        generateMap(map, spaceshipPosition, currentPosiotion, isGameRunning, score, healthStatus);
-        receiveInput(map, spaceshipPosition, currentPosiotion, healthStatus, score);
-        if (score == 10 || healthStatus == 0){
-            isGameRunning = false;
+        generateMap(map, spaceshipPosition, currentPosition, enemyCounter, score, healthStatus);
+        receiveInput(map, spaceshipPosition, currentPosition, healthStatus, score);
+        if (score == enemyCounter || healthStatus == 0)
+        {
+            break;
         }
     }
-    gameOver(score, healthStatus);
+    gameOver(score, healthStatus, enemyCounter);
 }
 
-void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&currenntPosiotion)[2],bool &isGameRunning, int score, int healthStatus)
+void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&currentPosition)[2], int enemyCounter, int score, int healthStatus)
 {
     string enemy = "*", spaceship = "^";
     if (spaceshipPosition[0] == -1)
@@ -45,13 +47,13 @@ void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&curre
         srand(time(NULL));
         int random_x_position;
         int random_y_position;
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < enemyCounter; i++)
         {
             do
             {
                 random_x_position = rand() % 10;
                 random_y_position = rand() % 10;
-            } while (map[random_x_position][random_y_position] == enemy);
+            } while (map[random_x_position][random_y_position] == enemy || isFilled(map, random_x_position));
             map[random_x_position][random_y_position] = enemy;
         }
 
@@ -62,18 +64,13 @@ void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&curre
             map[random_x_position][random_y_position] = spaceship;
             spaceshipPosition[0] = random_x_position;
             spaceshipPosition[1] = random_y_position;
-            currenntPosiotion[0] = spaceshipPosition[0];
-            currenntPosiotion[1] = spaceshipPosition[1];
+            currentPosition[0] = spaceshipPosition[0];
+            currentPosition[1] = spaceshipPosition[1];
         } while (map[random_x_position][random_y_position] == enemy);
     }
     else
     {
         system("cls");
-        if (score == 10 || healthStatus == 0)
-        {
-            isGameRunning = false;
-            return;
-        }
     }
 
     cout << "Score: " << score << endl;
@@ -110,7 +107,7 @@ void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&curre
     }
 }
 
-void receiveInput(string (&map)[10][10], int spaceshipPosition[], int (&currentPosition)[2],int &healthStatus, int &score)
+void receiveInput(string (&map)[10][10], int spaceshipPosition[], int (&currentPosition)[2], int &healthStatus, int &score)
 {
     char userInput;
 
@@ -183,14 +180,14 @@ bool validateInput(char userInput, string status)
     }
 }
 
-void gameOver(int score, int healthStatus)
+void gameOver(int score, int healthStatus, int enemyCounter)
 {
-    if (score == 10)
+    if (score == enemyCounter)
     {
-        cout << "\n   \\\\      //\\\\      //  ||     //\\\\      // \n";
-        cout << "    \\\\    //  \\\\    //   ||    //  \\\\    // \n";
-        cout << "     \\\\  //    \\\\  //    ||   //    \\\\  // \n";
-        cout << "      \\\\//      \\\\//     ||  //      \\\\// \n\n";
+        cout << "\n   \\\\      //\\\\      //  ||    ||\\\\      || \n";
+        cout << "    \\\\    //  \\\\    //   ||    ||  \\\\    || \n";
+        cout << "     \\\\  //    \\\\  //    ||    ||    \\\\  || \n";
+        cout << "      \\\\//      \\\\//     ||    ||      \\\\|| \n\n";
     }
     else if (healthStatus == 0)
     {
@@ -202,7 +199,7 @@ void gameOver(int score, int healthStatus)
     }
 }
 
-void move(char direction, string (&map)[10][10], int spaceshipPosition[],  int (&currentPosition)[2], int &healthStatus)
+void move(char direction, string (&map)[10][10], int spaceshipPosition[], int (&currentPosition)[2], int &healthStatus)
 {
     for (int i = 0; i < 10; i++)
     {
@@ -291,39 +288,45 @@ void move(char direction, string (&map)[10][10], int spaceshipPosition[],  int (
     }
 }
 
-void shot(char direction, string (&map)[10][10], int (&currentPosition)[2], int &score) {
-    switch(direction)
+void shot(char direction, string (&map)[10][10], int (&currentPosition)[2], int &score)
+{
+    switch (direction)
     {
-        case 'a':
-                for (int j = currentPosition[1]; j >= 0; j--){
-                    if (map[currentPosition[0]][j] == "*")
-                    {
-                        map[currentPosition[0]][j] = " ";
-                        score++;
-                        return;
-                    }
-                }
-            break;
-        case 'd':
-                for (int j = currentPosition[1]; j <= 9; j ++){
-                    if (map[currentPosition[0]][j] == "*")
-                    {
-                        map[currentPosition[0]][j] = " ";
-                        score++;
-                        return;
-                    }
-                }
-            break;
+    case 'a':
+        for (int j = currentPosition[1]; j >= 0; j--)
+        {
+            if (map[currentPosition[0]][j] == "*")
+            {
+                map[currentPosition[0]][j] = " ";
+                score++;
+                return;
+            }
+        }
+        break;
+    case 'd':
+        for (int j = currentPosition[1]; j <= 9; j++)
+        {
+            if (map[currentPosition[0]][j] == "*")
+            {
+                map[currentPosition[0]][j] = " ";
+                score++;
+                return;
+            }
+        }
+        break;
     }
 }
 
-void damage(int &healthStatus) {
+void damage(int &healthStatus)
+{
     healthStatus--;
 }
 
-string HealthBar(int &healthStatus){
+string HealthBar(int &healthStatus)
+{
     string health = "Health: [   ";
-    for (int i = 9; i <= healthStatus + 8; i++){
+    for (int i = 9; i <= healthStatus + 8; i++)
+    {
         health.replace(i, healthStatus + 8, "*");
     }
 
@@ -334,4 +337,27 @@ string HealthBar(int &healthStatus){
 string throwError(string errorMessage)
 {
     return errorMessage;
+}
+
+bool isFilled(string map[][10], int row)
+{
+    int counter = 0;
+    for (int j = 0; j < 10; j++)
+    {
+        if (map[row][j] == "*")
+        {
+            counter++;
+        }
+    }
+    if (counter == 9)
+    {
+        return true;
+    }
+    return false;
+}
+
+int generateCountOfEnemy()
+{
+    int count = (rand() % 81) + 10;
+    return count;
 }

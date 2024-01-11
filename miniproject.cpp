@@ -4,6 +4,7 @@
 
 using namespace std;
 
+// functions declaration
 void runGame();
 void generateMap(string (&)[10][10], int (&)[2], int (&)[2], int, int, int);
 void receiveInput(string (&)[10][10], int[], int (&)[2], int &, int &);
@@ -13,7 +14,6 @@ void move(char, string (&)[10][10], int[], int (&)[2], int &);
 void shot(char, string (&)[10][10], int (&)[2], int &);
 void damage(int &);
 string HealthBar(int &healthStatus);
-string throwError(string);
 bool isFilled(string[][10], int);
 int generateCountOfEnemy();
 
@@ -23,32 +23,46 @@ int main()
     return 0;
 }
 
+// runGame function is the root function of the game
 void runGame()
 {
+    // map of game is defined here to be available in all of the program
     string map[10][10];
+    /*
+    spaceshipPosition saves the first position of spaceship and currentPosition does the same but for the current moment
+    enemyCounter saves count of enemy spaceship from 10 to 90
+    */
     int spaceshipPosition[2] = {-1, -1}, currentPosition[2] = {-1, 1}, enemyCounter = generateCountOfEnemy(), score = 0, healthStatus = 3;
+    // while enemy spaceships exist or health remains, game is running
     while (true)
     {
         generateMap(map, spaceshipPosition, currentPosition, enemyCounter, score, healthStatus);
+        // receive user inputs
         receiveInput(map, spaceshipPosition, currentPosition, healthStatus, score);
+        // check the conditions of end game
         if (score == enemyCounter || healthStatus == 0)
         {
             break;
         }
     }
+    // show the result of game
     gameOver(score, healthStatus, enemyCounter);
 }
 
+// generateMap creates map for the first time and generates random positions for spaceships and also updates game situation with any moves or shots
 void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&currentPosition)[2], int enemyCounter, int score, int healthStatus)
 {
     string enemy = "*", spaceship = "^";
+    // checking for generate new map or update map
     if (spaceshipPosition[0] == -1)
     {
+        // generating random position for enemy spaceships
         srand(time(NULL));
         int random_x_position;
         int random_y_position;
         for (int i = 0; i < enemyCounter; i++)
         {
+            // handling overwriting enemy spaceships and also checking for being empty at least one of spaces in each row
             do
             {
                 random_x_position = rand() % 10;
@@ -57,6 +71,7 @@ void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&curre
             map[random_x_position][random_y_position] = enemy;
         }
 
+        // generate position of user spaceship and checking for overwriting spaceships
         do
         {
             random_x_position = rand() % 10;
@@ -73,6 +88,7 @@ void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&curre
         system("cls");
     }
 
+    // show the map with spaceships,score and health bar
     cout << "Score: " << score << endl;
     cout << HealthBar(healthStatus) << endl;
 
@@ -107,6 +123,7 @@ void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&curre
     }
 }
 
+// receiveInput receives user inputs and checks them to be valid. At the end it calls move or shot function
 void receiveInput(string (&map)[10][10], int spaceshipPosition[], int (&currentPosition)[2], int &healthStatus, int &score)
 {
     char userInput;
@@ -138,6 +155,7 @@ void receiveInput(string (&map)[10][10], int spaceshipPosition[], int (&currentP
     }
 }
 
+// validateInput checks the user choices with the predefined options
 bool validateInput(char userInput, string status)
 {
     //  status value can be : "firstChoice" or "move" or "shot"
@@ -150,7 +168,7 @@ bool validateInput(char userInput, string status)
         }
         else
         {
-            cout << throwError("Your choice is invalid. You have to choose between `m` or `s` : ");
+            cout << "Your choice is invalid. You have to choose between `m` or `s` : ";
             return false;
         }
     }
@@ -162,7 +180,7 @@ bool validateInput(char userInput, string status)
         }
         else
         {
-            cout << throwError("Your choice is invalid. You have to choose between `w` or `s` or `a` or `d` : ");
+            cout << "Your choice is invalid. You have to choose between `w` or `s` or `a` or `d` : ";
             return false;
         }
     }
@@ -174,12 +192,13 @@ bool validateInput(char userInput, string status)
         }
         else
         {
-            cout << throwError("Your choice is invalid. You have to choose between `a` or `d` : ");
+            cout << "Your choice is invalid. You have to choose between `a` or `d` : ";
             return false;
         }
     }
 }
 
+// this functions show the result of game
 void gameOver(int score, int healthStatus, int enemyCounter)
 {
     if (score == enemyCounter)
@@ -199,6 +218,11 @@ void gameOver(int score, int healthStatus, int enemyCounter)
     }
 }
 
+/*
+move function handles user spaceship moves
+for each direction this function checks for existence and ability to do user choice
+if user spaceship goes on any enemy spaceship positions it will be damaged
+*/
 void move(char direction, string (&map)[10][10], int spaceshipPosition[], int (&currentPosition)[2], int &healthStatus)
 {
     for (int i = 0; i < 10; i++)
@@ -288,6 +312,10 @@ void move(char direction, string (&map)[10][10], int spaceshipPosition[], int (&
     }
 }
 
+/*
+this function handles user spaceship shots
+for each correct shot score will be increased
+*/
 void shot(char direction, string (&map)[10][10], int (&currentPosition)[2], int &score)
 {
     switch (direction)
@@ -317,11 +345,13 @@ void shot(char direction, string (&map)[10][10], int (&currentPosition)[2], int 
     }
 }
 
+// damage function decreases the health of user spaceship
 void damage(int &healthStatus)
 {
     healthStatus--;
 }
 
+// this function returns the health bar for print in console
 string HealthBar(int &healthStatus)
 {
     string health = "Health: [   ";
@@ -334,11 +364,7 @@ string HealthBar(int &healthStatus)
     return health;
 }
 
-string throwError(string errorMessage)
-{
-    return errorMessage;
-}
-
+// isFilled function checks a row of the map,if it has more than one empty space then it will returns true, else it will returns false
 bool isFilled(string map[][10], int row)
 {
     int counter = 0;
@@ -356,6 +382,7 @@ bool isFilled(string map[][10], int row)
     return false;
 }
 
+// this function returns the number of enemy spaceship between 10 to 90 randomly
 int generateCountOfEnemy()
 {
     srand(time(NULL));

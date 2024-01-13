@@ -1,3 +1,6 @@
+/*
+ This game is developed by Mahdi Sadeghi => 40212358026 & Reza Namvaran => 40212358042
+*/
 #include <iostream>
 #include <string>
 #include <ctime>
@@ -6,16 +9,15 @@ using namespace std;
 
 // functions declaration
 void runGame();
-void generateMap(string (&)[10][10], int (&)[2], int (&)[2], int, int, int);
+void generateMap(string (&)[10][10], int (&)[2], int (&)[2], int, int);
 void receiveInput(string (&)[10][10], int[], int (&)[2], int &, int &);
 bool validateInput(char, string);
-void gameOver(int, int, int);
+void gameOver(int, int);
 void move(char, string (&)[10][10], int[], int (&)[2], int &);
 void shot(char, string (&)[10][10], int (&)[2], int &);
 void damage(int &);
 string HealthBar(int &healthStatus);
 bool isFilled(string[][10], int);
-int generateCountOfEnemy();
 
 int main()
 {
@@ -28,29 +30,26 @@ void runGame()
 {
     // map of game is defined here to be available in all of the program
     string map[10][10];
-    /*
-    spaceshipPosition saves the first position of spaceship and currentPosition does the same but for the current moment
-    enemyCounter saves count of enemy spaceship from 10 to 90
-    */
-    int spaceshipPosition[2] = {-1, -1}, currentPosition[2] = {-1, 1}, enemyCounter = generateCountOfEnemy(), score = 0, healthStatus = 3;
+    // spaceshipPosition saves the first position of spaceship and currentPosition does the same but for the current moment
+    int spaceshipPosition[2] = {-1, -1}, currentPosition[2] = {-1, 1}, score = 0, healthStatus = 3;
     // while enemy spaceships exist or health remains, game is running
     while (true)
     {
-        generateMap(map, spaceshipPosition, currentPosition, enemyCounter, score, healthStatus);
+        generateMap(map, spaceshipPosition, currentPosition, score, healthStatus);
         // receive user inputs
         receiveInput(map, spaceshipPosition, currentPosition, healthStatus, score);
         // check the conditions of end game
-        if (score == enemyCounter || healthStatus == 0)
+        if (score == 10 || healthStatus == 0)
         {
             break;
         }
     }
     // show the result of game
-    gameOver(score, healthStatus, enemyCounter);
+    gameOver(score, healthStatus);
 }
 
 // generateMap creates map for the first time and generates random positions for spaceships and also updates game situation with any moves or shots
-void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&currentPosition)[2], int enemyCounter, int score, int healthStatus)
+void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&currentPosition)[2], int score, int healthStatus)
 {
     string enemy = "*", spaceship = "^";
     // checking for generate new map or update map
@@ -60,7 +59,7 @@ void generateMap(string (&map)[10][10], int (&spaceshipPosition)[2], int (&curre
         srand(time(NULL));
         int random_x_position;
         int random_y_position;
-        for (int i = 0; i < enemyCounter; i++)
+        for (int i = 0; i < 10; i++)
         {
             // handling overwriting enemy spaceships and also checking for being empty at least one of spaces in each row
             do
@@ -199,9 +198,9 @@ bool validateInput(char userInput, string status)
 }
 
 // this functions show the result of game
-void gameOver(int score, int healthStatus, int enemyCounter)
+void gameOver(int score, int healthStatus)
 {
-    if (score == enemyCounter)
+    if (score == 10)
     {
         cout << "\n   \\\\      //\\\\      //  ||    ||\\\\      || \n";
         cout << "    \\\\    //  \\\\    //   ||    ||  \\\\    || \n";
@@ -380,12 +379,4 @@ bool isFilled(string map[][10], int row)
         return true;
     }
     return false;
-}
-
-// this function returns the number of enemy spaceship between 10 to 90 randomly
-int generateCountOfEnemy()
-{
-    srand(time(NULL));
-    int count = (rand() % 81) + 10;
-    return count;
 }

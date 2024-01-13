@@ -46,6 +46,7 @@ void runGame()
     }
     // show the result of game
     gameOver(score, healthStatus);
+    system("pause");
 }
 
 // generateMap creates map for the first time and generates random positions for spaceships and also updates game situation with any moves or shots
